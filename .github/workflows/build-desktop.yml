@@ -2,9 +2,21 @@ name: Build desktop packages
 
 on:
   workflow_dispatch:
+    inputs:
+      publish_release:
+        description: Publish a GitHub Release after build
+        required: false
+        default: false
+        type: boolean
+      release_tag:
+        description: Release tag to publish (required when publish_release is true)
+        required: false
+        type: string
   push:
     branches:
       - main
+    tags:
+      - 'v*'
     paths:
       - 'package.json'
       - 'package-lock.json'
@@ -14,6 +26,9 @@ on:
       - 'public/**'
       - 'desktop-host/**'
       - '.github/workflows/build-desktop.yml'
+
+permissions:
+  contents: write
 
 jobs:
   build-macos:
@@ -50,11 +65,16 @@ jobs:
           deno task check
           deno task build
 
+      - name: Archive macOS app
+        working-directory: desktop-host/dist
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent PaperCupRadio.app PaperCupRadio-macos-app.zip
+
       - name: Upload macOS artifact
         uses: actions/upload-artifact@v4
         with:
           name: PaperCupRadio-macos-app
-          path: desktop-host/dist/PaperCupRadio.app
+          path: desktop-host/dist/PaperCupRadio-macos-app.zip
           if-no-files-found: error
 
   build-linux-and-windows:
@@ -75,7 +95,7 @@ jobs:
           deno-version: v2.9.0
 
       - name: Install ImageMagick
-        run: sudo apt-get update && sudo apt-get install -y imagemagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick zip
 
       - name: Install npm dependencies
         run: npm ci
@@ -95,11 +115,15 @@ jobs:
           deno task build:linux-deb
           deno task build:linux-rpm
 
+      - name: Archive Windows directory
+        working-directory: desktop-host/dist/windows
+        run: zip -r PaperCupRadio-windows-dir.zip PaperCupRadio
+
       - name: Upload Windows directory artifact
         uses: actions/upload-artifact@v4
         with:
           name: PaperCupRadio-windows-dir
-          path: desktop-host/dist/windows/PaperCupRadio
+          path: desktop-host/dist/windows/PaperCupRadio-windows-dir.zip
           if-no-files-found: error
 
       - name: Upload Windows MSI artifact
@@ -118,3 +142,60 @@ jobs:
             desktop-host/dist/linux/paper-cup-radio.deb
             desktop-host/dist/linux/paper-cup-radio.rpm
           if-no-files-found: error
+
+  publish-release:
+    needs:
+      - build-macos
+      - build-linux-and-windows
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.publish_release == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PaperCupRadio-macos-app
+          path: release-assets
+
+      - name: Download Windows directory artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PaperCupRadio-windows-dir
+          path: release-assets
+
+      - name: Download Windows MSI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PaperCupRadio-windows-msi
+          path: release-assets
+
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: PaperCupRadio-linux-packages
+          path: release-assets
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
+            echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          elif [ -n "${{ inputs.release_tag }}" ]; then
+            echo "value=${{ inputs.release_tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_tag input is required when publish_release is true" >&2
+            exit 1
+          fi
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag.outputs.value }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          files: |
+            release-assets/PaperCupRadio-macos-app.zip
+            release-assets/PaperCupRadio-windows-dir.zip
+            release-assets/PaperCupRadio.msi
+            release-assets/PaperCupRadio.AppImage
+            release-assets/paper-cup-radio.deb
+            release-assets/paper-cup-radio.rpm
