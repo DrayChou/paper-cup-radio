@@ -69,6 +69,9 @@ deno task build:win-msi
 
 ## 给测试同事的说明
 
+更完整的测试步骤见：`docs/TESTING_GUIDE.md`
+
+
 ### macOS
 1. 打开 `desktop-host/dist/PaperCupRadio.app`
 2. 等待“纸杯电台总台”窗口弹出
@@ -90,6 +93,10 @@ deno task build:win-msi
 - 总台窗口是否会实时刷新最新播报
 - 自动复制到剪贴板是否稳定
 - 通知权限开启后是否能收到提醒
+
+## Release 文案模板
+
+发布说明模板见：`docs/RELEASE_TEMPLATE.md`
 
 ## 当前阶段说明
 
