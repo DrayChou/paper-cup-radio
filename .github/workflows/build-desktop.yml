@@ -25,13 +25,16 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Setup Deno
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.9.0
+
+      - name: Install ImageMagick
+        run: brew install imagemagick
 
       - name: Install npm dependencies
         run: npm ci
@@ -63,7 +66,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Setup Deno

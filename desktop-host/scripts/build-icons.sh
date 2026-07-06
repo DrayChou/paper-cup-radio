@@ -8,9 +8,18 @@ ICONSET_DIR="$BUILD_DIR/RemoteInputHost.iconset"
 
 mkdir -p "$BUILD_DIR" "$ICONSET_DIR"
 
+if command -v magick >/dev/null 2>&1; then
+  IM_CMD=(magick)
+elif command -v convert >/dev/null 2>&1; then
+  IM_CMD=(convert)
+else
+  echo "Neither 'magick' nor 'convert' is available. Please install ImageMagick." >&2
+  exit 127
+fi
+
 render() {
   local size="$1"
-  magick -background none "$ICONS_DIR/app.svg" -resize "${size}x${size}" "PNG32:$BUILD_DIR/app-${size}.png"
+  "${IM_CMD[@]}" -background none "$ICONS_DIR/app.svg" -resize "${size}x${size}" "PNG32:$BUILD_DIR/app-${size}.png"
 }
 
 for size in 16 32 64 128 256 512 1024; do
@@ -34,7 +43,7 @@ else
   echo "iconutil not found, skip app.icns generation"
 fi
 
-magick "$BUILD_DIR/app-256.png" -define icon:auto-resize=16,24,32,48,64,128,256 "$ICONS_DIR/app.ico"
+"${IM_CMD[@]}" "$BUILD_DIR/app-256.png" -define icon:auto-resize=16,24,32,48,64,128,256 "$ICONS_DIR/app.ico"
 cp "$BUILD_DIR/app-512.png" "$ICONS_DIR/app.png"
 cp "$BUILD_DIR/app-32.png" "$ICONS_DIR/tray.png"
 
