@@ -137,9 +137,9 @@ body[data-scene='rainy-alley']::before {
 }
 
 .container {
-  width: min(1180px, calc(100% - 24px));
+  width: min(1180px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 18px 0 34px;
+  padding: 20px 0 112px;
 }
 
 .card {
@@ -158,6 +158,15 @@ h1 {
   font-size: clamp(28px, 4vw, 54px);
   line-height: 1.06;
   letter-spacing: -0.03em;
+}
+
+.hub-header h1 {
+  font-size: clamp(22px, 3vw, 40px);
+}
+
+.hub-header .subtle {
+  max-width: 640px;
+  font-size: 14px;
 }
 
 h2 {
@@ -317,6 +326,12 @@ button.reuse {
   grid-template-columns: minmax(300px, 360px) 1fr;
 }
 
+.hub-main-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .hub-page {
   padding-top: 24px;
 }
@@ -325,32 +340,22 @@ button.reuse {
 }
 
 .hero-card {
-  padding: 22px;
-  border-radius: 30px;
+  padding: 14px;
+  border-radius: 24px;
   background: var(--hero-gradient);
 }
 .hero-head {
   align-items: flex-start;
 }
-.hero-preview {
-  min-height: 108px;
-  padding: 16px 18px;
-  border-radius: 22px;
-  border: 1px dashed rgba(167, 78, 53, 0.24);
-  background: var(--preview-bg);
-  white-space: pre-wrap;
-  word-break: break-word;
-  line-height: 1.62;
-}
 
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 10px;
 }
 .stat-card {
-  padding: 14px 16px;
-  border-radius: 20px;
+  padding: 10px 14px;
+  border-radius: 18px;
   border: 1px solid rgba(167, 78, 53, 0.12);
   background: var(--mini-card-bg);
   display: flex;
@@ -362,7 +367,7 @@ button.reuse {
   color: var(--muted);
 }
 .stat-value {
-  font-size: 32px;
+  font-size: 28px;
   line-height: 1;
 }
 
@@ -370,13 +375,21 @@ button.reuse {
   border-radius: 22px;
 }
 .history-panel {
-  min-height: 720px;
+  min-height: 640px;
 }
 
 .history-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.panel-view {
+  min-height: 0;
+}
+.divider {
+  height: 1px;
+  background: rgba(167, 78, 53, 0.12);
 }
 .entry,
 .mini-card {
@@ -539,6 +552,75 @@ button.reuse {
   padding: 10px 14px;
 }
 
+.hub-bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  padding: 10px;
+  border: 1px solid rgba(167, 78, 53, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 250, 242, 0.88);
+  box-shadow: 0 22px 50px rgba(92, 59, 36, 0.18);
+  backdrop-filter: blur(20px);
+  z-index: 60;
+}
+.hub-bottom-nav::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  pointer-events: none;
+}
+.nav-pill {
+  min-width: 102px;
+  background: rgba(255, 245, 236, 0.98);
+  border: 1px solid rgba(167, 78, 53, 0.14);
+  box-shadow: 0 6px 14px rgba(92, 59, 36, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease;
+}
+.nav-pill:hover {
+  transform: translateY(-1px);
+}
+.nav-pill-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.nav-pill-icon {
+  font-size: 13px;
+  opacity: 0.8;
+}
+.nav-pill-label {
+  font-weight: 700;
+}
+.nav-pill.active {
+  background: linear-gradient(180deg, #dd876d, var(--accent));
+  color: #fffaf6;
+  border-color: rgba(199, 104, 75, 0.26);
+  box-shadow: 0 12px 22px rgba(199, 104, 75, 0.26);
+}
+.nav-pill.active .nav-pill-icon {
+  opacity: 1;
+}
+:root[data-theme='dark'] .hub-bottom-nav {
+  background: rgba(29, 24, 21, 0.92);
+  border-color: rgba(236, 157, 127, 0.14);
+  box-shadow: 0 20px 44px rgba(0, 0, 0, 0.32);
+}
+:root[data-theme='dark'] .hub-bottom-nav::after {
+  border-color: rgba(255, 255, 255, 0.05);
+}
+:root[data-theme='dark'] .nav-pill {
+  background: rgba(37, 31, 28, 0.94);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.24);
+}
+
 @media (max-width: 899px) {
   .grid-wide {
     grid-template-columns: 1fr;
@@ -553,12 +635,22 @@ button.reuse {
   .history-panel {
     min-height: 0;
   }
+
+  .hub-bottom-nav {
+    width: calc(100% - 28px);
+    justify-content: stretch;
+  }
+
+  .nav-pill {
+    flex: 1 1 0;
+    min-width: 0;
+  }
 }
 
 @media (max-width: 640px) {
   .container {
-    width: calc(100% - 14px);
-    padding: 12px 0 24px;
+    width: calc(100% - 18px);
+    padding: 14px 0 112px;
   }
 
   .card {
@@ -607,6 +699,12 @@ button.reuse {
     align-items: center;
     flex-direction: row;
     justify-content: flex-end;
+  }
+
+  .hub-bottom-nav {
+    bottom: 12px;
+    gap: 8px;
+    padding: 10px;
   }
 
   .toast {

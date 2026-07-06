@@ -306,8 +306,8 @@ function ensureHubWindow() {
 
   hubWindow = new Deno.BrowserWindow({
     title: '纸杯电台总台',
-    width: 1180,
-    height: 860,
+    width: 860,
+    height: 1120,
   })
 
   hubWindow.addEventListener('close', (event: Event & { preventDefault(): void }) => {

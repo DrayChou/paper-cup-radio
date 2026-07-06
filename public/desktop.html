@@ -21,17 +21,14 @@
     <section class="card hero-card stack">
       <div class="inline-row hero-head wrap-on-mobile">
         <div class="stack compact-gap">
-          <span class="eyebrow">Now playing</span>
-          <h2 id="latest-title">等待新内容</h2>
-          <p id="latest-subtitle" class="subtle">新内容到达后，这里会优先显示来源设备、时间和复制状态。</p>
+          <span class="eyebrow">Overview</span>
+          <h2>总台概览</h2>
         </div>
         <div class="toolbar">
-          <button id="copy-latest-btn" class="copy" type="button" disabled>复制这条播报</button>
           <button id="notify-btn" class="ghost" type="button">开启浏览器提醒</button>
           <button id="theme-toggle-btn" class="ghost" type="button">切换主题</button>
         </div>
       </div>
-      <div id="latest-preview" class="hero-preview empty-state">还没有收到内容。</div>
       <div class="stat-grid">
         <article class="stat-card">
           <span class="stat-label">在线纸杯</span>
@@ -50,34 +47,8 @@
 
     <div id="latest-banner" class="toast hidden" role="status" aria-live="polite"></div>
 
-    <div class="grid grid-wide">
-      <div class="stack">
-        <div class="card stack section-card">
-          <div class="inline-row">
-            <h2>接入方式</h2>
-            <span class="muted-small">手机默认访问 `/`</span>
-          </div>
-          <div id="info-list" class="info-list"></div>
-        </div>
-
-        <div class="card stack section-card">
-          <div class="inline-row">
-            <h2>在线纸杯</h2>
-            <span class="muted-small">实时更新</span>
-          </div>
-          <div id="clients-list" class="list-stack"></div>
-        </div>
-
-        <div class="card stack section-card">
-          <div class="inline-row">
-            <h2>正在说话</h2>
-            <span class="muted-small">可快速复制</span>
-          </div>
-          <div id="drafts-list" class="list-stack"></div>
-        </div>
-      </div>
-
-      <div class="card stack section-card history-panel">
+    <div class="stack hub-main-stack">
+      <section id="panel-history" class="card stack section-card history-panel panel-view">
         <div class="inline-row">
           <div class="stack compact-gap">
             <span class="eyebrow">History</span>
@@ -86,8 +57,59 @@
           <span class="muted-small">按时间倒序</span>
         </div>
         <div id="history-list" class="history-list"></div>
-      </div>
+      </section>
+
+      <section id="panel-clients" class="card stack section-card panel-view hidden">
+        <div class="inline-row">
+          <div class="stack compact-gap">
+            <span class="eyebrow">Devices</span>
+            <h2>在线纸杯</h2>
+          </div>
+          <span class="muted-small">实时更新</span>
+        </div>
+        <div id="clients-list" class="list-stack"></div>
+      </section>
+
+      <section id="panel-info" class="card stack section-card panel-view hidden">
+        <div class="inline-row">
+          <div class="stack compact-gap">
+            <span class="eyebrow">Info</span>
+            <h2>接入方式</h2>
+          </div>
+          <span class="muted-small">手机默认访问 `/`</span>
+        </div>
+        <div id="info-list" class="info-list"></div>
+        <div class="divider"></div>
+        <div class="stack compact-gap">
+          <div class="inline-row">
+            <h3>正在说话</h3>
+            <span class="muted-small">可快速复制</span>
+          </div>
+          <div id="drafts-list" class="list-stack"></div>
+        </div>
+      </section>
     </div>
+
+    <nav class="hub-bottom-nav" aria-label="总台分页导航">
+      <button class="nav-pill active" type="button" data-panel-target="history">
+        <span class="nav-pill-content">
+          <span class="nav-pill-icon">●</span>
+          <span class="nav-pill-label">播报</span>
+        </span>
+      </button>
+      <button class="nav-pill" type="button" data-panel-target="clients">
+        <span class="nav-pill-content">
+          <span class="nav-pill-icon">◎</span>
+          <span class="nav-pill-label">纸杯</span>
+        </span>
+      </button>
+      <button class="nav-pill" type="button" data-panel-target="info">
+        <span class="nav-pill-content">
+          <span class="nav-pill-icon">≡</span>
+          <span class="nav-pill-label">说明</span>
+        </span>
+      </button>
+    </nav>
   </div>
   <script src="/desktop.js"></script>
 </body>

@@ -12,11 +12,13 @@ const clientsList = document.getElementById('clients-list') as HTMLDivElement
 const clientsCount = document.getElementById('clients-count') as HTMLSpanElement
 const latestBanner = document.getElementById('latest-banner') as HTMLDivElement
 const notifyBtn = document.getElementById('notify-btn') as HTMLButtonElement
-const latestTitle = document.getElementById('latest-title') as HTMLHeadingElement
-const latestSubtitle = document.getElementById('latest-subtitle') as HTMLParagraphElement
-const latestPreview = document.getElementById('latest-preview') as HTMLDivElement
-const copyLatestBtn = document.getElementById('copy-latest-btn') as HTMLButtonElement
 const themeToggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement
+const navButtons = [...document.querySelectorAll<HTMLButtonElement>('[data-panel-target]')]
+const panels = {
+  history: document.getElementById('panel-history') as HTMLElement,
+  clients: document.getElementById('panel-clients') as HTMLElement,
+  info: document.getElementById('panel-info') as HTMLElement,
+}
 
 let ws: WebSocket | null = null
 let lastNotifiedId: string | null = null
@@ -160,30 +162,11 @@ async function runCopy(button: HTMLButtonElement, text: string, endpoint?: strin
   }
 }
 
-function renderLatest() {
-  const latest = state.history[0]
-  if (!latest) {
-    latestTitle.textContent = '等待下一条播报'
-    latestSubtitle.textContent = '新的内容到达后，这里会优先显示来源纸杯、时间和复制状态。'
-    latestPreview.textContent = '还没有收到任何播报。'
-    latestPreview.classList.add('empty-state')
-    copyLatestBtn.disabled = true
-    return
-  }
-
-  latestTitle.textContent = latest.deviceName
-  latestSubtitle.textContent = `${formatTime(latest.createdAt)} · ${latest.remoteAddress || 'unknown ip'}`
-  latestPreview.textContent = latest.text
-  latestPreview.classList.remove('empty-state')
-  copyLatestBtn.disabled = false
-}
-
 function renderAll() {
   renderInfo()
   renderClients()
   renderDrafts()
   renderHistory()
-  renderLatest()
 }
 
 let toastTimer: number | undefined
@@ -279,18 +262,28 @@ draftsList.addEventListener('click', async (event) => {
   await runCopy(button, draft.text)
 })
 
+function activatePanel(panelName: keyof typeof panels) {
+  for (const [name, panel] of Object.entries(panels) as Array<[keyof typeof panels, HTMLElement]>) {
+    panel.classList.toggle('hidden', name !== panelName)
+  }
+  for (const button of navButtons) {
+    button.classList.toggle('active', button.dataset.panelTarget === panelName)
+  }
+}
+
+navButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const target = button.dataset.panelTarget as keyof typeof panels
+    activatePanel(target)
+  })
+})
+
 historyList.addEventListener('click', async (event) => {
   const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-copy-id]')
   if (!button) return
   const entry = state.history.find((item) => item.id === button.dataset.copyId)
   if (!entry) return
   await runCopy(button, entry.text, `/api/history/${entry.id}/copy`)
-})
-
-copyLatestBtn.addEventListener('click', async () => {
-  const latest = state.history[0]
-  if (!latest) return
-  await runCopy(copyLatestBtn, latest.text, `/api/history/${latest.id}/copy`)
 })
 
 notifyBtn.addEventListener('click', async () => {
@@ -304,4 +297,5 @@ notifyBtn.addEventListener('click', async () => {
 
 initTheme(themeToggleBtn)
 initScene(document.body)
+activatePanel('history')
 loadInitialData().then(connect)
