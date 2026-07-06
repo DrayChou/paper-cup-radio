@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>纸杯电台 · 输入页</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body class="mobile-page">
@@ -14,13 +15,17 @@
         <p class="subtle">只需设置一次。设置完成后，这里就只留下输入框和发送按钮。</p>
       </div>
       <input id="device-name-input" class="text-input" type="text" maxlength="40" placeholder="例如：客厅那只纸杯" />
-      <button id="save-device-btn" class="primary mobile-primary-btn" type="button">保存并开始输入</button>
+      <div class="mobile-setup-actions">
+        <button id="shuffle-name-btn" class="ghost" type="button">换个名字</button>
+        <button id="save-device-btn" class="primary mobile-primary-btn" type="button">保存并开始输入</button>
+      </div>
     </section>
 
     <section id="editor-shell" class="mobile-editor-shell hidden" aria-live="polite">
       <textarea id="editor" class="mobile-editor" placeholder="在这里输入，支持手机输入法和语音输入…" disabled></textarea>
-      <div class="mobile-toolbar">
+      <div class="mobile-toolbar mobile-toolbar-triplet">
         <button id="clear-btn" class="ghost" type="button" disabled>清空</button>
+        <button id="theme-toggle-btn" class="ghost mobile-theme-btn" type="button">切换主题</button>
         <button id="submit-btn" class="primary mobile-primary-btn" type="button" disabled>送到纸杯电台</button>
       </div>
       <div class="mobile-footer-hint">

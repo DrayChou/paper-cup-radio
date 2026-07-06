@@ -1,0 +1,12 @@
+{
+  "desktop": {
+    "app": {
+      "name": "Paper Cup Radio",
+      "identifier": "com.papercupradio.app"
+    },
+    "backend": "webview"
+  },
+  "imports": {
+    "@std/path": "jsr:@std/path@^1.1.1"
+  }
+}

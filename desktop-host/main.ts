@@ -2,7 +2,6 @@
 /// <reference path="./deno-desktop.d.ts" />
 
 import { basename, dirname, fromFileUrl, join } from '@std/path'
-import trayIconSvg from './icons/tray.svg' with { type: 'text' }
 
 const SERVER_PORT = 8765
 const HOST_BOOT_HTML = `<!doctype html>
@@ -53,7 +52,10 @@ const DESKTOP_CLIENT = {
 
 const importMetaRepoRoot = dirname(dirname(fromFileUrl(import.meta.url)))
 const serverBase = `http://127.0.0.1:${SERVER_PORT}`
-const trayIconBytes = new TextEncoder().encode(trayIconSvg)
+const trayIconBytes = Uint8Array.from(
+  atob('iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAAAAAAAAPlDu38AAAAHdElNRQfqBwYGJTbPhChEAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDI2LTA3LTA2VDA2OjM3OjU0KzAwOjAwALZWDwAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyNi0wNy0wNlQwNjozNzo1NCswMDowMHHr7rMAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjYtMDctMDZUMDY6Mzc6NTQrMDA6MDAm/s9sAAACK0lEQVRYw+3Wu2sUURgF8N+4uyZZokRBg5r4qoJgIeKjsLSxtLDSTv0vLG3SCnaivaggRBCx0EYFRVERxDeaGDXxsUk05DE7FjviZvbuxCxauQcuzD333G/OfPfe7w5ttPG/I8obfHryWAM3cOLMXzWw7A80RaxF6V9koJg3mMTzVKvFqFjqEUWTmFtK8CSeWdCPCh1Lmxz/+CaerpRGh84VkyRRnZuWxDMNgevn5LUQojwDKQ7iAC7gDiayXxQIXkIvBrATV/EwlIHcJUixC8dxGPdxCecxktF1YQ/2Yje2ow/zuNEs+GIGlmFz+lzGvrRVcDaj3YGLWJ3hXwbMLnhBHsrYmOHmMParU5f+jegJxBjGl1YN9GBdhvuB0YB2Q5N4r9I5LRno1ZjSCsYD2v4mMZ7lvSBooC6tfejODH9OTdSjkGqziPFiyQbqsEXjRv2A7xmuS+NSwSRe07wILWZga4AbwWyGW4k1Ae248H75IwMlv49gPd4FuNVY1UT7tVUDK7ApwA8HuF6Ne4XaCZhu1UAB7y1M94y0qESFjvrNuh6hRX5uEeRVwjEcUat8h7Afy/ExoO33+16J8QlPcBOSpNqSAWpH7jKGsE2tzoeWoBv3cAu3RdGDR5dOT7y9e22q2FlWnW9+iwcNBG65GI/T1iDHKQxK68PsVMWb21fKxc5yUp2bJWr+45Wbgfqz2+w+R6JWG2qdauz64FHFznKt/Ea5f31ttNGGn0dysoLd9X6TAAAAAElFTkSuQmCC'),
+  (char) => char.charCodeAt(0),
+)
 
 let bootstrapWindow: Deno.BrowserWindow | null = null
 let hubWindow: Deno.BrowserWindow | null = null

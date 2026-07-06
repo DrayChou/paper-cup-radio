@@ -1,4 +1,5 @@
 import { ClientProfile, DraftItem, ServerEvent, createClientId, suggestDeviceName } from './shared'
+import { initScene, initTheme } from './theme'
 
 const PROFILE_KEY = 'remote-input-demo:profile'
 const DRAFT_KEY = 'remote-input-demo:draft'
@@ -11,6 +12,8 @@ const setupCard = document.getElementById('setup-card') as HTMLDivElement
 const editorShell = document.getElementById('editor-shell') as HTMLDivElement
 const deviceNameInput = document.getElementById('device-name-input') as HTMLInputElement
 const saveDeviceBtn = document.getElementById('save-device-btn') as HTMLButtonElement
+const shuffleNameBtn = document.getElementById('shuffle-name-btn') as HTMLButtonElement
+const themeToggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement | null
 
 let ws: WebSocket | null = null
 let sendTimer: number | undefined
@@ -182,6 +185,12 @@ function connect() {
   })
 }
 
+shuffleNameBtn.addEventListener('click', () => {
+  deviceNameInput.value = suggestDeviceName()
+  deviceNameInput.focus()
+  deviceNameInput.select()
+})
+
 saveDeviceBtn.addEventListener('click', async () => {
   const deviceName = deviceNameInput.value.trim()
   if (!deviceName) {
@@ -226,6 +235,9 @@ clearBtn.addEventListener('click', () => {
   applyDraft({ text: '', selectionStart: 0, selectionEnd: 0 })
   queueDraftSync()
 })
+
+initTheme(themeToggleBtn)
+initScene(document.body)
 
 profile = loadProfile()
 deviceNameInput.value = profile?.deviceName || suggestDeviceName()

@@ -1,4 +1,5 @@
 import { ClientSummary, DraftItem, HistoryEntry, ServerEvent, ServerInfo } from './shared'
+import { initScene, initTheme } from './theme'
 
 const wsDot = document.getElementById('ws-dot') as HTMLSpanElement
 const wsLabel = document.getElementById('ws-label') as HTMLSpanElement
@@ -15,6 +16,7 @@ const latestTitle = document.getElementById('latest-title') as HTMLHeadingElemen
 const latestSubtitle = document.getElementById('latest-subtitle') as HTMLParagraphElement
 const latestPreview = document.getElementById('latest-preview') as HTMLDivElement
 const copyLatestBtn = document.getElementById('copy-latest-btn') as HTMLButtonElement
+const themeToggleBtn = document.getElementById('theme-toggle-btn') as HTMLButtonElement
 
 let ws: WebSocket | null = null
 let lastNotifiedId: string | null = null
@@ -300,4 +302,6 @@ notifyBtn.addEventListener('click', async () => {
   notifyBtn.textContent = permission === 'granted' ? '浏览器提醒已开启' : '浏览器提醒未开启'
 })
 
+initTheme(themeToggleBtn)
+initScene(document.body)
 loadInitialData().then(connect)
