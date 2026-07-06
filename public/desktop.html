@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>纸杯电台 · 总台</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="container stack hub-page">
+    <div class="header hub-header">
+      <div class="stack compact-gap">
+        <span class="eyebrow">Paper Cup Radio</span>
+        <h1>纸杯电台总台</h1>
+        <p class="subtle">所有纸杯的声音都会落到这里。最新一条优先展示，并可立即再次复制到电脑剪贴板。</p>
+      </div>
+      <div class="badge badge-large"><span id="ws-dot" class="dot"></span><span id="ws-label">连接中</span></div>
+    </div>
+
+    <section class="card hero-card stack">
+      <div class="inline-row hero-head wrap-on-mobile">
+        <div class="stack compact-gap">
+          <span class="eyebrow">Now playing</span>
+          <h2 id="latest-title">等待新内容</h2>
+          <p id="latest-subtitle" class="subtle">新内容到达后，这里会优先显示来源设备、时间和复制状态。</p>
+        </div>
+        <div class="toolbar">
+          <button id="copy-latest-btn" class="copy" type="button" disabled>复制这条播报</button>
+          <button id="notify-btn" class="ghost" type="button">开启浏览器提醒</button>
+        </div>
+      </div>
+      <div id="latest-preview" class="hero-preview empty-state">还没有收到内容。</div>
+      <div class="stat-grid">
+        <article class="stat-card">
+          <span class="stat-label">在线纸杯</span>
+          <strong id="clients-count" class="stat-value">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">正在说话</span>
+          <strong id="drafts-count" class="stat-value">0</strong>
+        </article>
+        <article class="stat-card">
+          <span class="stat-label">播报存档</span>
+          <strong id="history-count" class="stat-value">0</strong>
+        </article>
+      </div>
+    </section>
+
+    <div id="latest-banner" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <div class="grid grid-wide">
+      <div class="stack">
+        <div class="card stack section-card">
+          <div class="inline-row">
+            <h2>接入方式</h2>
+            <span class="muted-small">手机默认访问 `/`</span>
+          </div>
+          <div id="info-list" class="info-list"></div>
+        </div>
+
+        <div class="card stack section-card">
+          <div class="inline-row">
+            <h2>在线纸杯</h2>
+            <span class="muted-small">实时更新</span>
+          </div>
+          <div id="clients-list" class="list-stack"></div>
+        </div>
+
+        <div class="card stack section-card">
+          <div class="inline-row">
+            <h2>正在说话</h2>
+            <span class="muted-small">可快速复制</span>
+          </div>
+          <div id="drafts-list" class="list-stack"></div>
+        </div>
+      </div>
+
+      <div class="card stack section-card history-panel">
+        <div class="inline-row">
+          <div class="stack compact-gap">
+            <span class="eyebrow">History</span>
+            <h2>播报存档</h2>
+          </div>
+          <span class="muted-small">按时间倒序</span>
+        </div>
+        <div id="history-list" class="history-list"></div>
+      </div>
+    </div>
+  </div>
+  <script src="/desktop.js"></script>
+</body>
+</html>

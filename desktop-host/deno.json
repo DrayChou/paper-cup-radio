@@ -1,0 +1,21 @@
+{
+  "desktop": {
+    "app": {
+      "name": "Paper Cup Radio",
+      "identifier": "com.papercupradio.app"
+    },
+    "backend": "webview"
+  },
+  "tasks": {
+    "icons": "bash ./scripts/build-icons.sh",
+    "dev": "deno task icons && deno desktop --hmr --allow-read --allow-run --allow-net --allow-env main.ts",
+    "check": "deno check main.ts",
+    "build": "deno task icons && deno desktop --allow-read --allow-run --allow-net --allow-env --output ./dist/PaperCupRadio.app main.ts",
+    "build:win": "deno task icons && deno desktop --allow-read --allow-run --allow-net --allow-env --target x86_64-pc-windows-msvc --output ./dist/windows/PaperCupRadio main.ts",
+    "build:win-msi": "deno task icons && deno desktop --allow-read --allow-run --allow-net --allow-env --target x86_64-pc-windows-msvc --output ./dist/windows/PaperCupRadio.msi main.ts",
+    "open-built": "open ./dist/PaperCupRadio.app"
+  },
+  "imports": {
+    "@std/path": "jsr:@std/path@^1.1.1"
+  }
+}

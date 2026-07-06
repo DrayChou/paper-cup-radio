@@ -1,0 +1,9 @@
+node_modules/
+dist/
+public/mobile.js
+public/desktop.js
+data/*.jsonl
+desktop-host/dist/
+desktop-host/*.app/
+desktop-host/icons/build/
+.DS_Store
