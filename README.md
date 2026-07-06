@@ -74,10 +74,15 @@ deno task build:win-msi
 
 ### macOS
 1. 打开 `desktop-host/dist/PaperCupRadio.app`
-2. 等待“纸杯电台总台”窗口弹出
-3. 用手机访问宿主机局域网首页 `/`
-4. 给纸杯命名后开始发送内容
-5. 桌面端确认：最新播报、复制按钮、历史记录、浏览器提醒是否正常
+2. 如果 macOS 提示“PaperCupRadio.app 已损毁，无法打开”，请先执行：
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/PaperCupRadio.app
+   ```
+   如果 app 不在 `/Applications`，把路径替换成实际位置。
+3. 等待“纸杯电台总台”窗口弹出
+4. 用手机访问宿主机局域网首页 `/`
+5. 给纸杯命名后开始发送内容
+6. 桌面端确认：最新播报、复制按钮、历史记录、浏览器提醒是否正常
 
 ### Windows
 1. 运行 `desktop-host/dist/windows/PaperCupRadio/` 目录版，或者安装 `desktop-host/dist/windows/PaperCupRadio.msi`

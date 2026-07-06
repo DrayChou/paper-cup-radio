@@ -20,6 +20,18 @@
    - 是否自动复制到本机剪贴板
    - 历史记录里是否有该条内容
 
+## macOS 打开失败的处理
+
+如果下载后的 `PaperCupRadio.app` 被 macOS 提示“已损毁，无法打开”，通常不是包真的损坏，而是系统拦截了未公证的测试应用。
+
+执行：
+
+```bash
+xattr -dr com.apple.quarantine /Applications/PaperCupRadio.app
+```
+
+如果 app 不在 `/Applications`，把路径替换成实际位置，再重新打开即可。
+
 ## 建议测试项
 
 ### 1. 单设备基础发送
