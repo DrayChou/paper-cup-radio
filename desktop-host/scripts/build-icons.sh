@@ -28,7 +28,12 @@ cp "$BUILD_DIR/app-512.png" "$ICONSET_DIR/icon_256x256@2x.png"
 cp "$BUILD_DIR/app-512.png" "$ICONSET_DIR/icon_512x512.png"
 cp "$BUILD_DIR/app-1024.png" "$ICONSET_DIR/icon_512x512@2x.png"
 
-iconutil -c icns "$ICONSET_DIR" -o "$ICONS_DIR/app.icns"
+if command -v iconutil >/dev/null 2>&1; then
+  iconutil -c icns "$ICONSET_DIR" -o "$ICONS_DIR/app.icns"
+else
+  echo "iconutil not found, skip app.icns generation"
+fi
+
 magick "$BUILD_DIR/app-256.png" -define icon:auto-resize=16,24,32,48,64,128,256 "$ICONS_DIR/app.ico"
 cp "$BUILD_DIR/app-512.png" "$ICONS_DIR/app.png"
 cp "$BUILD_DIR/app-32.png" "$ICONS_DIR/tray.png"

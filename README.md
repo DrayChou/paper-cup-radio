@@ -41,6 +41,21 @@ npm start
 
 项目自带一个 Deno Desktop 宿主原型，位于 `desktop-host/`，负责 tray、桌面窗口、原生通知和打包。
 
+## GitHub 自动打包
+
+仓库内置了 GitHub Actions 工作流：`.github/workflows/build-desktop.yml`。
+
+触发方式：
+- push 到 `main`
+- 手动触发 `workflow_dispatch`
+
+产物：
+- macOS: `PaperCupRadio.app`
+- Windows: 目录版 + `PaperCupRadio.msi`
+- Linux: `.AppImage` + `.deb` + `.rpm`
+
+构建完成后，可直接在 GitHub Actions 的 artifacts 里下载对应平台包。
+
 常用命令：
 
 ```bash

@@ -1,0 +1,117 @@
+name: Build desktop packages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig.json'
+      - 'scripts/**'
+      - 'src/**'
+      - 'public/**'
+      - 'desktop-host/**'
+      - '.github/workflows/build-desktop.yml'
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.0
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build web and server
+        run: |
+          npm run check
+          npm run build
+
+      - name: Build macOS app
+        working-directory: desktop-host
+        run: |
+          deno task check
+          deno task build
+
+      - name: Upload macOS artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperCupRadio-macos-app
+          path: desktop-host/dist/PaperCupRadio.app
+          if-no-files-found: error
+
+  build-linux-and-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.0
+
+      - name: Install ImageMagick
+        run: sudo apt-get update && sudo apt-get install -y imagemagick
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build web and server
+        run: |
+          npm run check
+          npm run build
+
+      - name: Build Windows and Linux packages
+        working-directory: desktop-host
+        run: |
+          deno task check
+          deno task build:win
+          deno task build:win-msi
+          deno task build:linux-appimage
+          deno task build:linux-deb
+          deno task build:linux-rpm
+
+      - name: Upload Windows directory artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperCupRadio-windows-dir
+          path: desktop-host/dist/windows/PaperCupRadio
+          if-no-files-found: error
+
+      - name: Upload Windows MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperCupRadio-windows-msi
+          path: desktop-host/dist/windows/PaperCupRadio.msi
+          if-no-files-found: error
+
+      - name: Upload Linux artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperCupRadio-linux-packages
+          path: |
+            desktop-host/dist/linux/PaperCupRadio.AppImage
+            desktop-host/dist/linux/paper-cup-radio.deb
+            desktop-host/dist/linux/paper-cup-radio.rpm
+          if-no-files-found: error
