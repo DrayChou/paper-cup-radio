@@ -86,10 +86,11 @@ deno task build:win-msi
 
 ### Windows
 1. 运行 `desktop-host/dist/windows/PaperCupRadio/` 目录版，或者安装 `desktop-host/dist/windows/PaperCupRadio.msi`
-2. 打开总台窗口
-3. 用手机访问局域网首页 `/`
-4. 给纸杯命名后发送内容
-5. 检查剪贴板复制、通知、历史记录、再次复制是否正常
+2. 当前 Windows 包已切到 `cef` backend，以绕开 Deno Desktop 在 Windows `webview` / WebView2 初始化链上的已知崩溃问题
+3. 打开总台窗口
+4. 用手机访问局域网首页 `/`
+5. 给纸杯命名后发送内容
+6. 检查剪贴板复制、通知、历史记录、再次复制是否正常
 
 ### 建议测试项
 - 单设备连接是否稳定

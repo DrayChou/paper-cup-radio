@@ -4,7 +4,7 @@
       "name": "Paper Cup Radio",
       "identifier": "com.papercupradio.app"
     },
-    "backend": "webview"
+    "backend": "cef"
   },
   "imports": {
     "@std/path": "jsr:@std/path@^1.1.1"
