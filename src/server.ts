@@ -166,6 +166,32 @@ function writeToClipboard(text: string): Promise<void> {
   })
 }
 
+function pasteFromClipboardToFocusedWindow(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (process.platform !== 'win32') {
+      resolve()
+      return
+    }
+
+    const command = [
+      '$wshell = New-Object -ComObject WScript.Shell;',
+      'Start-Sleep -Milliseconds 120;',
+      "$wshell.SendKeys('^v');",
+    ].join(' ')
+    const child = spawn('powershell.exe', ['-NoProfile', '-Command', command])
+
+    let stderr = ''
+    child.stderr.on('data', (chunk) => {
+      stderr += chunk.toString()
+    })
+    child.on('error', reject)
+    child.on('close', (code) => {
+      if (code === 0) resolve()
+      else reject(new Error(stderr || `paste command exited with code ${code}`))
+    })
+  })
+}
+
 function notifyDesktop(title: string, message: string): Promise<void> {
   return new Promise((resolve) => {
     if (process.platform === 'darwin') {
@@ -280,6 +306,7 @@ app.post('/api/submit', async (req, res) => {
   })
 
   const clipboard = { ok: false, error: null as string | null }
+  const paste = { attempted: process.platform === 'win32', ok: false, error: null as string | null }
   try {
     await writeToClipboard(entry.text)
     clipboard.ok = true
@@ -287,11 +314,24 @@ app.post('/api/submit', async (req, res) => {
     clipboard.error = error instanceof Error ? error.message : String(error)
   }
 
-  notifyDesktop('Paper Cup Radio', `来自 ${entry.deviceName} 的新输入已到达${clipboard.ok ? '，并已复制到剪贴板' : ''}`).catch(() => undefined)
+  if (paste.attempted && clipboard.ok) {
+    try {
+      await pasteFromClipboardToFocusedWindow()
+      paste.ok = true
+    } catch (error) {
+      paste.error = error instanceof Error ? error.message : String(error)
+    }
+  }
 
-  broadcast({ type: 'history:add', entry, clipboard })
+  const desktopNotice = clipboard.ok
+    ? (paste.ok ? `来自 ${entry.deviceName} 的新输入已到达，并已直接粘贴到当前输入框` : `来自 ${entry.deviceName} 的新输入已到达，并已复制到剪贴板`)
+    : `来自 ${entry.deviceName} 的新输入已到达`
+
+  notifyDesktop('Paper Cup Radio', desktopNotice).catch(() => undefined)
+
+  broadcast({ type: 'history:add', entry, clipboard, paste })
   broadcast({ type: 'clients:update', clients: getClientSummary() })
-  res.json({ ok: true, entry, clipboard })
+  res.json({ ok: true, entry, clipboard, paste })
 })
 
 app.post('/api/draft', (req, res) => {

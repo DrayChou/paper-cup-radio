@@ -171,14 +171,25 @@ function renderAll() {
 
 let toastTimer: number | undefined
 
-function showLatestBanner(entry: HistoryEntry, clipboard: { ok: boolean; error: string | null }) {
+function showLatestBanner(
+  entry: HistoryEntry,
+  clipboard: { ok: boolean; error: string | null },
+  paste?: { attempted: boolean; ok: boolean; error: string | null },
+) {
   latestBanner.classList.remove('hidden')
+  const statusText = paste?.attempted
+    ? (paste.ok
+      ? '已直接粘贴到当前输入框，并同步复制到剪贴板'
+      : clipboard.ok
+        ? '已复制到本机剪贴板，直接粘贴未完成'
+        : `自动复制失败：${escapeHtml(clipboard.error || 'unknown error')}`)
+    : (clipboard.ok ? '已自动复制到本机剪贴板' : `自动复制失败：${escapeHtml(clipboard.error || 'unknown error')}`)
   latestBanner.innerHTML = `
     <div class="toast-head">
       <strong>${escapeHtml(entry.deviceName)}</strong>
       <span class="muted-small">${escapeHtml(formatTime(entry.createdAt))}</span>
     </div>
-    <div class="toast-body">${clipboard.ok ? '已自动复制到本机剪贴板' : `<span class="warning">自动复制失败：${escapeHtml(clipboard.error || 'unknown error')}</span>`}</div>
+    <div class="toast-body">${paste?.attempted && !paste.ok && paste.error ? `<span class="warning">${escapeHtml(statusText)}：${escapeHtml(paste.error)}</span>` : statusText}</div>
     <div class="toast-preview">${escapeHtml(entry.text)}</div>
   `
   window.clearTimeout(toastTimer)
@@ -187,14 +198,20 @@ function showLatestBanner(entry: HistoryEntry, clipboard: { ok: boolean; error: 
   }, 5200)
 }
 
-function maybeNotify(entry: HistoryEntry, clipboard: { ok: boolean; error: string | null }) {
+function maybeNotify(
+  entry: HistoryEntry,
+  clipboard: { ok: boolean; error: string | null },
+  paste?: { attempted: boolean; ok: boolean; error: string | null },
+) {
   if (lastNotifiedId === entry.id) return
   lastNotifiedId = entry.id
-  showLatestBanner(entry, clipboard)
+  showLatestBanner(entry, clipboard, paste)
 
   if ('Notification' in window && Notification.permission === 'granted') {
     new Notification(`来自 ${entry.deviceName} 的新输入`, {
-      body: clipboard.ok ? '已自动复制到本机剪贴板' : '新输入已到达',
+      body: paste?.attempted
+        ? (paste.ok ? '已直接粘贴到当前输入框' : clipboard.ok ? '已复制到剪贴板，直接粘贴未完成' : '新输入已到达')
+        : (clipboard.ok ? '已自动复制到本机剪贴板' : '新输入已到达'),
     })
   }
 }
@@ -248,7 +265,7 @@ function connect() {
     if (message.type === 'history:add') {
       state.history.unshift(message.entry)
       renderHistory()
-      maybeNotify(message.entry, message.clipboard)
+      maybeNotify(message.entry, message.clipboard, message.paste)
     }
   })
 }

@@ -40,7 +40,7 @@ export type ServerEvent =
   | { type: 'hello:ack'; client: ClientSummary }
   | { type: 'drafts:update'; drafts: DraftItem[] }
   | { type: 'clients:update'; clients: ClientSummary[] }
-  | { type: 'history:add'; entry: HistoryEntry; clipboard: { ok: boolean; error: string | null } }
+  | { type: 'history:add'; entry: HistoryEntry; clipboard: { ok: boolean; error: string | null }; paste?: { attempted: boolean; ok: boolean; error: string | null } }
   | { type: 'error'; error: string }
 
 const DEVICE_ADJECTIVES = [

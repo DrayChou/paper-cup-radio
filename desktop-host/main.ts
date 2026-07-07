@@ -420,14 +420,18 @@ function connectHostSocket() {
       type?: string
       entry?: { id: string; deviceName: string }
       clipboard?: { ok: boolean }
+      paste?: { attempted: boolean; ok: boolean }
     }
 
     if (payload.type === 'history:add' && payload.entry && payload.entry.id !== lastHistoryId) {
       lastHistoryId = payload.entry.id
       tray?.setTooltip(`纸杯电台 · 最新来自 ${payload.entry.deviceName}`)
+      const body = payload.paste?.attempted
+        ? (payload.paste.ok ? '已直接粘贴到当前输入框' : payload.clipboard?.ok ? '已复制到剪贴板，直接粘贴未完成' : '新输入已到达')
+        : (payload.clipboard?.ok ? '已自动复制到本机剪贴板' : '新输入已到达')
       await showNativeNotification(
         `来自 ${payload.entry.deviceName} 的新播报`,
-        payload.clipboard?.ok ? '已自动复制到本机剪贴板' : '新输入已到达',
+        body,
       )
     }
   })
