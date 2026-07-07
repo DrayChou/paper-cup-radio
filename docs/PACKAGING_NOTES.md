@@ -97,6 +97,8 @@
    - 等待数秒
    - 检查进程是否仍在
    - 读取 stdout/stderr
+   - 结束时要杀整棵进程树，而不是只停父进程
+   - 给 CEF 子进程释放文件锁留几秒缓冲，再压缩目录版
 4. 不要让 CI 每次都重渲染图标
    - 默认复用仓库里的 `app.icns/app.ico/app.png/tray.png`
    - 改 SVG 时才手动跑 `deno task icons`

@@ -149,11 +149,14 @@ jobs:
           if ($proc.HasExited) {
             throw "PaperCupRadio exited early with code $($proc.ExitCode)"
           }
-          Stop-Process -Id $proc.Id -Force
+          taskkill /PID $proc.Id /T /F | Out-Null
+          Start-Sleep -Seconds 3
 
       - name: Archive Windows directory
         shell: powershell
-        run: Compress-Archive -Path 'desktop-host/dist/windows/PaperCupRadio/*' -DestinationPath 'desktop-host/dist/windows/PaperCupRadio-windows-dir.zip' -Force
+        run: |
+          Start-Sleep -Seconds 2
+          Compress-Archive -Path 'desktop-host/dist/windows/PaperCupRadio/*' -DestinationPath 'desktop-host/dist/windows/PaperCupRadio-windows-dir.zip' -Force
 
       - name: Upload Windows directory artifact
         uses: actions/upload-artifact@v4
