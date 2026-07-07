@@ -1,14 +1,8 @@
-# Paper Cup Radio Release Template
-
-> 用于 GitHub Release 文案。将方括号内容替换成实际版本与说明。
-
-## 标题
-
-`Paper Cup Radio [版本号]`
+# Paper Cup Radio v0.1.0
 
 ## 简介
 
-这是一版面向测试同事的桌面测试包更新。
+这是一版面向测试同事的桌面测试包更新，重点修复了 Windows 打包后无法正常启动、中文剪贴板乱码，以及手机输入法遮挡发送按钮的问题。
 
 ## 本版重点
 

@@ -77,7 +77,92 @@ jobs:
           path: desktop-host/dist/PaperCupRadio-macos-app.zip
           if-no-files-found: error
 
-  build-linux-and-windows:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.9.0
+
+      - name: Install ImageMagick
+        shell: powershell
+        run: choco install imagemagick -y --no-progress
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Build web and server
+        run: |
+          npm run check
+          npm run build
+
+      - name: Build Windows MSI
+        working-directory: desktop-host
+        shell: powershell
+        run: |
+          deno task check
+          if (Test-Path .\dist\windows) { Remove-Item -Recurse -Force .\dist\windows }
+          New-Item -ItemType Directory -Force -Path .\dist\windows | Out-Null
+          deno task build:win-msi
+
+      - name: Upload Windows MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperCupRadio-windows-msi
+          path: desktop-host/dist/windows/PaperCupRadio.msi
+          if-no-files-found: error
+
+      - name: Build Windows directory package
+        working-directory: desktop-host
+        shell: powershell
+        run: |
+          if (Test-Path .\dist\windows) { Remove-Item -Recurse -Force .\dist\windows }
+          New-Item -ItemType Directory -Force -Path .\dist\windows | Out-Null
+          deno task build:win
+
+      - name: Smoke test Windows directory package
+        shell: powershell
+        run: |
+          $pkgDir = Join-Path $PWD 'desktop-host\dist\windows\PaperCupRadio'
+          $launcher = Join-Path $pkgDir 'PaperCupRadio.bat'
+          $stdout = Join-Path $env:RUNNER_TEMP 'paper-cup-radio-win-stdout.log'
+          $stderr = Join-Path $env:RUNNER_TEMP 'paper-cup-radio-win-stderr.log'
+          if (Test-Path $stdout) { Remove-Item $stdout -Force }
+          if (Test-Path $stderr) { Remove-Item $stderr -Force }
+          $proc = Start-Process -FilePath $launcher -WorkingDirectory $pkgDir -RedirectStandardOutput $stdout -RedirectStandardError $stderr -PassThru
+          Start-Sleep -Seconds 12
+          $proc.Refresh()
+          Write-Host 'launcher stdout:'
+          if (Test-Path $stdout) { Get-Content $stdout }
+          Write-Host 'launcher stderr:'
+          if (Test-Path $stderr) { Get-Content $stderr }
+          if ($proc.HasExited) {
+            throw "PaperCupRadio exited early with code $($proc.ExitCode)"
+          }
+          Stop-Process -Id $proc.Id -Force
+
+      - name: Archive Windows directory
+        shell: powershell
+        run: Compress-Archive -Path 'desktop-host/dist/windows/PaperCupRadio/*' -DestinationPath 'desktop-host/dist/windows/PaperCupRadio-windows-dir.zip' -Force
+
+      - name: Upload Windows directory artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperCupRadio-windows-dir
+          path: desktop-host/dist/windows/PaperCupRadio-windows-dir.zip
+          if-no-files-found: error
+
+  build-linux:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -105,33 +190,13 @@ jobs:
           npm run check
           npm run build
 
-      - name: Build Windows and Linux packages
+      - name: Build Linux packages
         working-directory: desktop-host
         run: |
           deno task check
-          deno task build:win
-          deno task build:win-msi
           deno task build:linux-appimage
           deno task build:linux-deb
           deno task build:linux-rpm
-
-      - name: Archive Windows directory
-        working-directory: desktop-host/dist/windows
-        run: zip -r PaperCupRadio-windows-dir.zip PaperCupRadio
-
-      - name: Upload Windows directory artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PaperCupRadio-windows-dir
-          path: desktop-host/dist/windows/PaperCupRadio-windows-dir.zip
-          if-no-files-found: error
-
-      - name: Upload Windows MSI artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: PaperCupRadio-windows-msi
-          path: desktop-host/dist/windows/PaperCupRadio.msi
-          if-no-files-found: error
 
       - name: Upload Linux artifacts
         uses: actions/upload-artifact@v4
@@ -146,7 +211,8 @@ jobs:
   publish-release:
     needs:
       - build-macos
-      - build-linux-and-windows
+      - build-windows
+      - build-linux
     if: startsWith(github.ref, 'refs/tags/v') || inputs.publish_release == true
     runs-on: ubuntu-latest
     steps:
