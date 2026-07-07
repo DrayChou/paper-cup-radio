@@ -499,7 +499,10 @@ button.reuse {
   gap: 10px;
   width: min(760px, calc(100% - 20px));
   margin: 0 auto;
-  padding: 8px 0 calc(var(--keyboard-inset) + 10px);
+  padding: 8px 0 10px;
+}
+body.keyboard-open .mobile-root {
+  justify-content: flex-start;
 }
 .mobile-setup-card {
   width: 100%;
@@ -520,7 +523,7 @@ button.reuse {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-bottom: calc(var(--mobile-toolbar-height) + var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 12px);
+  padding-bottom: calc(var(--mobile-toolbar-height) + env(safe-area-inset-bottom, 0px) + 12px);
 }
 .mobile-editor {
   flex: 1;
@@ -566,7 +569,7 @@ button.reuse {
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  padding-bottom: calc(var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 4px);
+  padding-bottom: 4px;
 }
 .mobile-theme-btn {
   padding: 10px 14px;
@@ -681,7 +684,7 @@ button.reuse {
   .mobile-root {
     width: calc(100% - 12px);
     min-height: 100dvh;
-    padding: 6px 0 calc(var(--keyboard-inset) + 8px);
+    padding: 6px 0 8px;
   }
 
   .mobile-setup-card {
@@ -697,7 +700,7 @@ button.reuse {
   .mobile-editor-shell {
     min-height: calc(100dvh - 12px);
     max-height: calc(100dvh - 12px);
-    padding-bottom: calc(var(--mobile-toolbar-height) + var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 10px);
+    padding-bottom: calc(var(--mobile-toolbar-height) + env(safe-area-inset-bottom, 0px) + 10px);
   }
 
   .mobile-editor {
