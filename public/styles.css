@@ -1,5 +1,7 @@
 :root {
   color-scheme: light;
+  --keyboard-inset: 0px;
+  --mobile-toolbar-height: 58px;
   --bg: #f1e7da;
   --bg-2: #e7d8c4;
   --paper: rgba(255, 251, 245, 0.96);
@@ -497,7 +499,7 @@ button.reuse {
   gap: 10px;
   width: min(760px, calc(100% - 20px));
   margin: 0 auto;
-  padding: 8px 0 10px;
+  padding: 8px 0 calc(var(--keyboard-inset) + 10px);
 }
 .mobile-setup-card {
   width: 100%;
@@ -518,6 +520,7 @@ button.reuse {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-bottom: calc(var(--mobile-toolbar-height) + var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 12px);
 }
 .mobile-editor {
   flex: 1;
@@ -533,9 +536,26 @@ button.reuse {
   background: rgba(23, 19, 17, 0.96);
 }
 .mobile-toolbar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 8px);
+  transform: translateX(-50%);
+  width: min(760px, calc(100% - 20px));
   display: grid;
   grid-template-columns: minmax(88px, 0.9fr) minmax(88px, 0.95fr) minmax(0, 1.55fr);
   gap: 10px;
+  padding: 10px;
+  border: 1px solid rgba(167, 78, 53, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 248, 240, 0.96);
+  box-shadow: 0 18px 36px rgba(92, 59, 36, 0.16);
+  backdrop-filter: blur(14px);
+  z-index: 50;
+}
+:root[data-theme='dark'] .mobile-toolbar {
+  background: rgba(28, 23, 20, 0.96);
+  border-color: rgba(236, 157, 127, 0.14);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.32);
 }
 .mobile-primary-btn {
   min-height: 50px;
@@ -546,7 +566,7 @@ button.reuse {
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2px);
+  padding-bottom: calc(var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 4px);
 }
 .mobile-theme-btn {
   padding: 10px 14px;
@@ -661,7 +681,7 @@ button.reuse {
   .mobile-root {
     width: calc(100% - 12px);
     min-height: 100dvh;
-    padding: 6px 0 8px;
+    padding: 6px 0 calc(var(--keyboard-inset) + 8px);
   }
 
   .mobile-setup-card {
@@ -677,6 +697,7 @@ button.reuse {
   .mobile-editor-shell {
     min-height: calc(100dvh - 12px);
     max-height: calc(100dvh - 12px);
+    padding-bottom: calc(var(--mobile-toolbar-height) + var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 10px);
   }
 
   .mobile-editor {
@@ -685,8 +706,12 @@ button.reuse {
   }
 
   .mobile-toolbar {
+    width: calc(100% - 12px);
     grid-template-columns: 0.9fr 0.95fr 1.45fr;
     gap: 8px;
+    padding: 8px;
+    border-radius: 18px;
+    bottom: calc(var(--keyboard-inset) + env(safe-area-inset-bottom, 0px) + 6px);
   }
 
   .mobile-primary-btn,

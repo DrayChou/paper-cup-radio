@@ -1,7 +1,14 @@
 /// <reference lib="dom" />
 /// <reference path="./deno-desktop.d.ts" />
 
-import { basename, dirname, fromFileUrl, join } from '@std/path'
+import { dirname, join } from '@std/path'
+import embeddedServerJs from '../dist/server.js' with { type: 'text' }
+import embeddedDesktopHtml from '../public/desktop.html' with { type: 'text' }
+import embeddedDesktopJs from '../public/desktop.js' with { type: 'text' }
+import embeddedFaviconSvg from '../public/favicon.svg' with { type: 'text' }
+import embeddedMobileHtml from '../public/mobile.html' with { type: 'text' }
+import embeddedMobileJs from '../public/mobile.js' with { type: 'text' }
+import embeddedStylesCss from '../public/styles.css' with { type: 'text' }
 
 const SERVER_PORT = 8765
 const HOST_BOOT_HTML = `<!doctype html>
@@ -50,21 +57,28 @@ const DESKTOP_CLIENT = {
   role: 'desktop',
 } as const
 
-const importMetaRepoRoot = dirname(dirname(fromFileUrl(import.meta.url)))
 const serverBase = `http://127.0.0.1:${SERVER_PORT}`
 const trayIconBytes = Uint8Array.from(
   atob('iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGYktHRAAAAAAAAPlDu38AAAAHdElNRQfqBwYGJTbPhChEAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDI2LTA3LTA2VDA2OjM3OjU0KzAwOjAwALZWDwAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyNi0wNy0wNlQwNjozNzo1NCswMDowMHHr7rMAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjYtMDctMDZUMDY6Mzc6NTQrMDA6MDAm/s9sAAACK0lEQVRYw+3Wu2sUURgF8N+4uyZZokRBg5r4qoJgIeKjsLSxtLDSTv0vLG3SCnaivaggRBCx0EYFRVERxDeaGDXxsUk05DE7FjviZvbuxCxauQcuzD333G/OfPfe7w5ttPG/I8obfHryWAM3cOLMXzWw7A80RaxF6V9koJg3mMTzVKvFqFjqEUWTmFtK8CSeWdCPCh1Lmxz/+CaerpRGh84VkyRRnZuWxDMNgevn5LUQojwDKQ7iAC7gDiayXxQIXkIvBrATV/EwlIHcJUixC8dxGPdxCecxktF1YQ/2Yje2ow/zuNEs+GIGlmFz+lzGvrRVcDaj3YGLWJ3hXwbMLnhBHsrYmOHmMParU5f+jegJxBjGl1YN9GBdhvuB0YB2Q5N4r9I5LRno1ZjSCsYD2v4mMZ7lvSBooC6tfejODH9OTdSjkGqziPFiyQbqsEXjRv2A7xmuS+NSwSRe07wILWZga4AbwWyGW4k1Ae248H75IwMlv49gPd4FuNVY1UT7tVUDK7ApwA8HuF6Ne4XaCZhu1UAB7y1M94y0qESFjvrNuh6hRX5uEeRVwjEcUat8h7Afy/ExoO33+16J8QlPcBOSpNqSAWpH7jKGsE2tzoeWoBv3cAu3RdGDR5dOT7y9e22q2FlWnW9+iwcNBG65GI/T1iDHKQxK68PsVMWb21fKxc5yUp2bJWr+45Wbgfqz2+w+R6JWG2qdauz64FHFznKt/Ea5f31ttNGGn0dysoLd9X6TAAAAAElFTkSuQmCC'),
   (char) => char.charCodeAt(0),
 )
 
-let bootstrapWindow: Deno.BrowserWindow | null = null
 let hubWindow: Deno.BrowserWindow | null = null
 let tray: Deno.Tray | null = null
 let serverProcess: Deno.ChildProcess | null = null
 let mobileUrl = `${serverBase}/`
 let lastHistoryId: string | null = null
-let resolvedRepoRoot = ''
+let runtimeRoot = ''
 let serverEntry = ''
+const EMBEDDED_RUNTIME_FILES = [
+  ['dist/server.js', embeddedServerJs],
+  ['public/desktop.html', embeddedDesktopHtml],
+  ['public/desktop.js', embeddedDesktopJs],
+  ['public/favicon.svg', embeddedFaviconSvg],
+  ['public/mobile.html', embeddedMobileHtml],
+  ['public/mobile.js', embeddedMobileJs],
+  ['public/styles.css', embeddedStylesCss],
+] as const
 const internalServeAddress = Deno.env.get('DENO_SERVE_ADDRESS') ?? 'tcp:127.0.0.1:0'
 const internalServePort = internalServeAddress.split(':').pop() ?? '0'
 const internalServeBase = `http://127.0.0.1:${internalServePort}`
@@ -136,28 +150,43 @@ async function fileExists(filePath: string) {
   }
 }
 
-async function resolveRepoRoot() {
-  const envOverride = Deno.env.get('REMOTE_INPUT_REPO_ROOT')
-  const cwd = Deno.cwd()
-  const cwdParent = dirname(cwd)
+function resolveRuntimeRoot() {
   const candidates = [
-    envOverride,
-    basename(cwd) === 'desktop-host' ? cwdParent : undefined,
-    cwd,
-    importMetaRepoRoot,
+    Deno.env.get('PAPER_CUP_RADIO_RUNTIME_ROOT'),
+    Deno.env.get('LOCALAPPDATA') ? join(Deno.env.get('LOCALAPPDATA')!, 'PaperCupRadio') : undefined,
+    Deno.env.get('APPDATA') ? join(Deno.env.get('APPDATA')!, 'PaperCupRadio') : undefined,
+    Deno.env.get('TEMP') ? join(Deno.env.get('TEMP')!, 'PaperCupRadio') : undefined,
+    join(Deno.cwd(), '.paper-cup-radio-runtime'),
   ].filter((value): value is string => Boolean(value))
 
-  for (const candidate of candidates) {
-    if (await fileExists(join(candidate, 'dist', 'server.js'))) {
-      console.log(`[host] using repo root: ${candidate}`)
-      return candidate
+  return candidates[0]
+}
+
+async function writeRuntimeTextFile(filePath: string, content: string) {
+  try {
+    const existing = await Deno.readTextFile(filePath)
+    if (existing === content) {
+      return
     }
+  } catch {
+    // write below
   }
 
-  throw new Error(
-    `Could not locate remote-input-demo root. Checked: ${candidates.join(', ')}. ` +
-    'Set REMOTE_INPUT_REPO_ROOT to the absolute project path if needed.',
-  )
+  await Deno.mkdir(dirname(filePath), { recursive: true })
+  await Deno.writeTextFile(filePath, content)
+}
+
+async function ensureRuntimeBundle() {
+  if (!runtimeRoot) {
+    runtimeRoot = resolveRuntimeRoot()
+    console.log(`[host] runtime root: ${runtimeRoot}`)
+  }
+
+  for (const [relativePath, content] of EMBEDDED_RUNTIME_FILES) {
+    await writeRuntimeTextFile(join(runtimeRoot, relativePath), content)
+  }
+
+  serverEntry = join(runtimeRoot, 'dist', 'server.js')
 }
 
 async function resolveNodeCommand() {
@@ -221,11 +250,10 @@ async function startServer() {
     // no existing server
   }
 
-  resolvedRepoRoot = await resolveRepoRoot()
-  serverEntry = join(resolvedRepoRoot, 'dist', 'server.js')
+  await ensureRuntimeBundle()
 
   if (!await fileExists(serverEntry)) {
-    throw new Error(`Server bundle not found at ${serverEntry}. Run \"npm run build\" in remote-input-demo first.`)
+    throw new Error(`Embedded server bundle was not materialized at ${serverEntry}.`)
   }
 
   console.log(`[host] server entry: ${serverEntry}`)
@@ -233,7 +261,7 @@ async function startServer() {
   console.log(`[host] using node runtime: ${nodeCommand}`)
   const command = new Deno.Command(nodeCommand, {
     args: [serverEntry],
-    cwd: resolvedRepoRoot,
+    cwd: runtimeRoot,
     stdout: 'piped',
     stderr: 'piped',
     env: {
@@ -283,23 +311,7 @@ async function waitForServerReady(timeoutMs = 20000) {
   throw new Error('Timed out waiting for local server to become ready')
 }
 
-function ensureBootstrapWindow() {
-  if (bootstrapWindow && !bootstrapWindow.isClosed()) {
-    return bootstrapWindow
-  }
-
-  bootstrapWindow = new Deno.BrowserWindow({
-    title: `${APP_NAME} Bootstrap`,
-    width: 120,
-    height: 80,
-  })
-  bootstrapWindow.hide()
-  return bootstrapWindow
-}
-
 function ensureHubWindow() {
-  ensureBootstrapWindow()
-
   if (hubWindow && !hubWindow.isClosed()) {
     return hubWindow
   }
@@ -427,11 +439,16 @@ function connectHostSocket() {
 
 async function main() {
   console.log('[host] main begin')
-  ensureBootstrapWindow()
+  console.log('[host] main before startServer')
   await startServer()
+  console.log('[host] main after startServer')
+  console.log('[host] main before waitForServerReady')
   await waitForServerReady()
+  console.log('[host] main after waitForServerReady')
+  console.log('[host] main before ensureTray')
   ensureTray()
   console.log('[host] tray ready')
+  console.log('[host] main before openHub')
   openHub()
   console.log('[host] hub requested')
   connectHostSocket()

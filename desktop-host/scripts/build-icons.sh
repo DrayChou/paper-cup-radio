@@ -13,14 +13,43 @@ if command -v magick >/dev/null 2>&1; then
 elif command -v convert >/dev/null 2>&1; then
   IM_CMD=(convert)
 else
-  echo "Neither 'magick' nor 'convert' is available. Please install ImageMagick." >&2
-  exit 127
+  IM_CMD=()
 fi
+
+has_prebuilt_icons() {
+  [[ -f "$ICONS_DIR/app.ico" && -f "$ICONS_DIR/app.png" && -f "$ICONS_DIR/tray.png" ]]
+}
+
+can_render_svg() {
+  [[ ${#IM_CMD[@]} -gt 0 ]] || return 1
+  local probe_png="$BUILD_DIR/.icon-probe.png"
+  rm -f "$probe_png"
+  if "${IM_CMD[@]}" -background none "$ICONS_DIR/app.svg" -resize 32x32 "PNG32:$probe_png" >/dev/null 2>&1; then
+    rm -f "$probe_png"
+    return 0
+  fi
+  rm -f "$probe_png"
+  return 1
+}
 
 render() {
   local size="$1"
   "${IM_CMD[@]}" -background none "$ICONS_DIR/app.svg" -resize "${size}x${size}" "PNG32:$BUILD_DIR/app-${size}.png"
 }
+
+if ! can_render_svg; then
+  if has_prebuilt_icons; then
+    echo "SVG rendering unavailable; reusing committed icon artifacts in $ICONS_DIR"
+    exit 0
+  fi
+
+  if [[ ${#IM_CMD[@]} -eq 0 ]]; then
+    echo "Neither 'magick' nor 'convert' is available, and no prebuilt icons were found." >&2
+  else
+    echo "ImageMagick is installed but cannot render $ICONS_DIR/app.svg, and no prebuilt icons were found." >&2
+  fi
+  exit 127
+fi
 
 for size in 16 32 64 128 256 512 1024; do
   render "$size"

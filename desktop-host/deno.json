@@ -11,14 +11,14 @@
   },
   "tasks": {
     "icons": "bash ./scripts/build-icons.sh",
-    "dev": "deno task icons && deno desktop --hmr --allow-read --allow-run --allow-net --allow-env main.ts",
+    "dev": "deno desktop --hmr --allow-read --allow-write --allow-run --allow-net --allow-env main.ts",
     "check": "deno check main.ts",
-    "build": "deno task icons && deno desktop --allow-read --allow-run --allow-net --allow-env --output ./dist/PaperCupRadio.app main.ts",
-    "build:win": "deno task icons && deno desktop --config deno.windows.json --allow-read --allow-run --allow-net --allow-env --target x86_64-pc-windows-msvc --output ./dist/windows/PaperCupRadio main.ts",
-    "build:win-msi": "deno task icons && deno desktop --config deno.windows.json --allow-read --allow-run --allow-net --allow-env --target x86_64-pc-windows-msvc --output ./dist/windows/PaperCupRadio.msi main.ts",
-    "build:linux-appimage": "deno task icons && deno desktop --allow-read --allow-run --allow-net --allow-env --target x86_64-unknown-linux-gnu --output ./dist/linux/PaperCupRadio.AppImage main.ts",
-    "build:linux-deb": "deno task icons && deno desktop --allow-read --allow-run --allow-net --allow-env --target x86_64-unknown-linux-gnu --output ./dist/linux/paper-cup-radio.deb main.ts",
-    "build:linux-rpm": "deno task icons && deno desktop --allow-read --allow-run --allow-net --allow-env --target x86_64-unknown-linux-gnu --output ./dist/linux/paper-cup-radio.rpm main.ts",
+    "build": "deno desktop --allow-read --allow-write --allow-run --allow-net --allow-env --output ./dist/PaperCupRadio.app main.ts",
+    "build:win": "deno desktop --backend cef --allow-read --allow-write --allow-run --allow-net --allow-env --target x86_64-pc-windows-msvc --output ./dist/windows/PaperCupRadio main.ts",
+    "build:win-msi": "deno desktop --backend cef --allow-read --allow-write --allow-run --allow-net --allow-env --target x86_64-pc-windows-msvc --output ./dist/windows/PaperCupRadio.msi main.ts",
+    "build:linux-appimage": "deno desktop --allow-read --allow-write --allow-run --allow-net --allow-env --target x86_64-unknown-linux-gnu --output ./dist/linux/PaperCupRadio.AppImage main.ts",
+    "build:linux-deb": "deno desktop --allow-read --allow-write --allow-run --allow-net --allow-env --target x86_64-unknown-linux-gnu --output ./dist/linux/paper-cup-radio.deb main.ts",
+    "build:linux-rpm": "deno desktop --allow-read --allow-write --allow-run --allow-net --allow-env --target x86_64-unknown-linux-gnu --output ./dist/linux/paper-cup-radio.rpm main.ts",
     "open-built": "open ./dist/PaperCupRadio.app"
   },
   "imports": {

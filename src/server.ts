@@ -133,7 +133,17 @@ function writeToClipboard(text: string): Promise<void> {
     if (process.platform === 'darwin') {
       child = spawn('pbcopy')
     } else if (process.platform === 'win32') {
-      child = spawn('powershell.exe', ['-NoProfile', '-Command', 'Set-Clipboard -Value ([Console]::In.ReadToEnd())'])
+      const base64 = Buffer.from(text, 'utf8').toString('base64')
+      const command = [
+        '$text = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($env:PAPER_CUP_RADIO_CLIPBOARD_BASE64));',
+        'Set-Clipboard -Value $text;',
+      ].join(' ')
+      child = spawn('powershell.exe', ['-NoProfile', '-Command', command], {
+        env: {
+          ...process.env,
+          PAPER_CUP_RADIO_CLIPBOARD_BASE64: base64,
+        },
+      })
     } else {
       reject(new Error('Clipboard copy is only implemented for macOS and Windows in this demo.'))
       return
@@ -148,8 +158,11 @@ function writeToClipboard(text: string): Promise<void> {
       if (code === 0) resolve()
       else reject(new Error(stderr || `clipboard command exited with code ${code}`))
     })
-    child.stdin.write(text, 'utf8')
-    child.stdin.end()
+
+    if (process.platform === 'darwin') {
+      child.stdin.write(text, 'utf8')
+      child.stdin.end()
+    }
   })
 }
 

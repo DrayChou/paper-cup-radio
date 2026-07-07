@@ -10,6 +10,7 @@ const submitBtn = document.getElementById('submit-btn') as HTMLButtonElement
 const clearBtn = document.getElementById('clear-btn') as HTMLButtonElement
 const setupCard = document.getElementById('setup-card') as HTMLDivElement
 const editorShell = document.getElementById('editor-shell') as HTMLDivElement
+const toolbar = document.querySelector('.mobile-toolbar') as HTMLDivElement | null
 const deviceNameInput = document.getElementById('device-name-input') as HTMLInputElement
 const saveDeviceBtn = document.getElementById('save-device-btn') as HTMLButtonElement
 const shuffleNameBtn = document.getElementById('shuffle-name-btn') as HTMLButtonElement
@@ -92,6 +93,21 @@ async function registerProfile(currentProfile: ClientProfile) {
   if (!response.ok) {
     throw new Error(result.error || 'register failed')
   }
+}
+
+function updateMobileViewportInsets() {
+  if (toolbar) {
+    const toolbarHeight = Math.ceil(toolbar.getBoundingClientRect().height)
+    document.documentElement.style.setProperty('--mobile-toolbar-height', `${toolbarHeight}px`)
+  }
+
+  const visualViewport = window.visualViewport
+  const keyboardInset = visualViewport
+    ? Math.max(0, Math.round(window.innerHeight - visualViewport.height - visualViewport.offsetTop))
+    : 0
+
+  document.documentElement.style.setProperty('--keyboard-inset', `${keyboardInset}px`)
+  document.body.classList.toggle('keyboard-open', keyboardInset > 80)
 }
 
 function queueDraftSync() {
@@ -230,14 +246,24 @@ editor.addEventListener('input', queueDraftSync)
 editor.addEventListener('keyup', queueDraftSync)
 editor.addEventListener('click', queueDraftSync)
 editor.addEventListener('select', queueDraftSync)
+editor.addEventListener('focus', () => window.setTimeout(updateMobileViewportInsets, 60))
+editor.addEventListener('blur', () => window.setTimeout(updateMobileViewportInsets, 120))
 submitBtn.addEventListener('click', submitDraft)
 clearBtn.addEventListener('click', () => {
   applyDraft({ text: '', selectionStart: 0, selectionEnd: 0 })
   queueDraftSync()
 })
 
+window.addEventListener('resize', updateMobileViewportInsets)
+window.addEventListener('orientationchange', () => window.setTimeout(updateMobileViewportInsets, 120))
+window.visualViewport?.addEventListener('resize', updateMobileViewportInsets)
+window.visualViewport?.addEventListener('scroll', updateMobileViewportInsets)
+window.addEventListener('focusin', () => window.setTimeout(updateMobileViewportInsets, 60))
+window.addEventListener('focusout', () => window.setTimeout(updateMobileViewportInsets, 120))
+
 initTheme(themeToggleBtn)
 initScene(document.body)
+updateMobileViewportInsets()
 
 profile = loadProfile()
 deviceNameInput.value = profile?.deviceName || suggestDeviceName()
