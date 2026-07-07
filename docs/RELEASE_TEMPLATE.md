@@ -4,7 +4,7 @@
 
 ## 标题
 
-`Paper Cup Radio [版本号]`
+`Paper Cup Radio 0.1.1`
 
 ## 简介
 
