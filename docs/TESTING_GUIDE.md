@@ -64,7 +64,13 @@ xattr -dr com.apple.quarantine /Applications/PaperCupRadio.app
 - 手动点击再次复制是否成功
 - Windows 下重点检查中文内容是否仍然乱码
 
-### 8. 手机输入法遮挡提交按钮
+### 8. 当前焦点自动粘贴
+- 在电脑上先手动点中浏览器或文本框输入位置
+- 手机发送一段文本
+- 检查文本是否直接进入当前焦点输入框
+- 如果自动粘贴失败，检查剪贴板内容是否仍然正确
+
+### 9. 手机输入法遮挡提交按钮
 - 手机输入框获得焦点
 - 让系统输入法 / 语音输入面板弹起
 - 检查“送到纸杯电台”按钮是否会跟着上移
@@ -73,7 +79,7 @@ xattr -dr com.apple.quarantine /Applications/PaperCupRadio.app
 ## 反馈模板
 
 - 系统：
-- 包类型：macOS / Windows 目录版 / Windows MSI / Linux AppImage / deb / rpm
+- 包类型：macOS / Windows 目录版 / Windows MSI / Windows Lite / Linux AppImage / deb / rpm
 - 设备名：
 - 复现步骤：
 - 实际结果：

@@ -51,7 +51,7 @@ npm start
 
 产物：
 - macOS: `PaperCupRadio.app`
-- Windows: 目录版 + `PaperCupRadio.msi`
+- Windows: 目录版 + `PaperCupRadio.msi` + `PaperCupRadioLite-windows.zip`
 - Linux: `.AppImage` + `.deb` + `.rpm`
 
 构建完成后，可直接在 GitHub Actions 的 artifacts 里下载对应平台包。
@@ -85,12 +85,15 @@ deno task build:win-msi
 6. 桌面端确认：最新播报、复制按钮、历史记录、浏览器提醒是否正常
 
 ### Windows
-1. 运行 `desktop-host/dist/windows/PaperCupRadio/` 目录版，或者安装 `desktop-host/dist/windows/PaperCupRadio.msi`
-2. 当前 Windows 包显式使用 `cef` backend，并在首次启动时把内嵌的 `dist/server.js` 和 `public/*` 落盘到本机运行目录，再启动本地服务
-3. 打开总台窗口
+1. 可选三种包：
+   - 目录版：`desktop-host/dist/windows/PaperCupRadio/`
+   - 安装版：`desktop-host/dist/windows/PaperCupRadio.msi`
+   - 轻量版：`PaperCupRadioLite-windows.zip`
+2. Full 版显式使用 `cef` backend，并在首次启动时把内嵌的 `dist/server.js` 和 `public/*` 落盘到本机运行目录，再启动本地服务
+3. Lite 版不再内嵌浏览器外壳，只启动本地服务并打开系统默认浏览器访问 `/d`
 4. 用手机访问局域网首页 `/`
 5. 给纸杯命名后发送内容
-6. 检查剪贴板复制、通知、历史记录、再次复制是否正常
+6. 检查剪贴板复制、当前焦点自动粘贴、通知、历史记录是否正常
 7. 重点检查中文复制出来是否仍然乱码
 
 ### 建议测试项

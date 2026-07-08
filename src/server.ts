@@ -4,7 +4,7 @@ import os from 'os'
 import http from 'http'
 import crypto from 'crypto'
 import { spawn } from 'child_process'
-import express, { Request } from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 import { WebSocket, WebSocketServer } from 'ws'
 import { ClientProfile, ClientSummary, DraftItem, HistoryEntry, ServerEvent, ServerInfo } from './shared'
 
@@ -388,6 +388,30 @@ app.post('/api/history/:id/copy', async (req, res) => {
   } catch (error) {
     res.status(500).json({ ok: false, error: error instanceof Error ? error.message : String(error) })
   }
+})
+
+app.use((error: { type?: string; status?: number; statusCode?: number; message?: string }, _req: Request, res: Response, next: NextFunction) => {
+  if (res.headersSent) {
+    next(error)
+    return
+  }
+
+  if (error?.type === 'request.aborted' || error?.message === 'request aborted') {
+    console.warn('Request aborted by client.')
+    res.status(400).json({ ok: false, error: 'request aborted' })
+    return
+  }
+
+  if (error?.type === 'entity.parse.failed') {
+    console.warn('Bad JSON payload received.')
+    res.status(400).json({ ok: false, error: 'invalid json payload' })
+    return
+  }
+
+  const status = error?.statusCode || error?.status || 500
+  const message = error?.message || 'internal server error'
+  console.error('Unhandled HTTP error:', message)
+  res.status(status).json({ ok: false, error: message })
 })
 
 const server = http.createServer(app)

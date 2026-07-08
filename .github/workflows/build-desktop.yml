@@ -165,6 +165,24 @@ jobs:
           path: desktop-host/dist/windows/PaperCupRadio-windows-dir.zip
           if-no-files-found: error
 
+      - name: Build Windows Lite host
+        shell: powershell
+        run: |
+          $liteDir = Join-Path $PWD 'desktop-host\dist\windows-lite\PaperCupRadioLite'
+          if (Test-Path $liteDir) { Remove-Item -Recurse -Force $liteDir }
+          New-Item -ItemType Directory -Force -Path $liteDir | Out-Null
+          deno compile --sloppy-imports --node-modules-dir=manual --allow-net --allow-read --allow-write --allow-run --allow-env --allow-sys --output (Join-Path $liteDir 'server-lite.exe') .\src\server.ts
+          Copy-Item .\desktop-host\lite-launcher.bat (Join-Path $liteDir 'PaperCupRadioLite.bat') -Force
+          Copy-Item .\public (Join-Path $liteDir 'public') -Recurse -Force
+          Compress-Archive -Path (Join-Path $liteDir '*') -DestinationPath 'desktop-host/dist/windows-lite/PaperCupRadioLite-windows.zip' -Force
+
+      - name: Upload Windows Lite artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PaperCupRadio-windows-lite
+          path: desktop-host/dist/windows-lite/PaperCupRadioLite-windows.zip
+          if-no-files-found: error
+
   build-linux:
     runs-on: ubuntu-latest
     steps:
@@ -237,6 +255,12 @@ jobs:
           name: PaperCupRadio-windows-msi
           path: release-assets
 
+      - name: Download Windows Lite artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PaperCupRadio-windows-lite
+          path: release-assets
+
       - name: Download Linux artifacts
         uses: actions/download-artifact@v4
         with:
@@ -265,6 +289,7 @@ jobs:
             release-assets/PaperCupRadio-macos-app.zip
             release-assets/PaperCupRadio-windows-dir.zip
             release-assets/PaperCupRadio.msi
+            release-assets/PaperCupRadioLite-windows.zip
             release-assets/PaperCupRadio.AppImage
             release-assets/paper-cup-radio.deb
             release-assets/paper-cup-radio.rpm
