@@ -269,6 +269,7 @@ jobs:
 
       - name: Resolve release tag
         id: tag
+        shell: bash
         run: |
           if [ "${GITHUB_REF_TYPE:-}" = "tag" ]; then
             echo "value=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
