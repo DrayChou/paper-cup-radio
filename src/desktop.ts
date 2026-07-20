@@ -22,6 +22,7 @@ const panels = {
 
 let ws: WebSocket | null = null
 let lastNotifiedId: string | null = null
+let notificationsEnabled = true
 
 const state: {
   info: ServerInfo | null
@@ -207,7 +208,7 @@ function maybeNotify(
   lastNotifiedId = entry.id
   showLatestBanner(entry, clipboard, paste)
 
-  if ('Notification' in window && Notification.permission === 'granted') {
+  if (notificationsEnabled && 'Notification' in window && Notification.permission === 'granted') {
     new Notification(`来自 ${entry.deviceName} 的新输入`, {
       body: paste?.attempted
         ? (paste.ok ? '已直接粘贴到当前输入框' : clipboard.ok ? '已复制到剪贴板，直接粘贴未完成' : '新输入已到达')
@@ -216,18 +217,30 @@ function maybeNotify(
   }
 }
 
+function renderNotificationButton() {
+  notifyBtn.textContent = notificationsEnabled ? '关闭通知' : '开启通知'
+  notifyBtn.setAttribute('aria-pressed', String(!notificationsEnabled))
+  notifyBtn.title = notificationsEnabled
+    ? '关闭系统与浏览器的新输入通知'
+    : '开启系统与浏览器的新输入通知'
+}
+
 async function loadInitialData() {
-  const [infoRes, historyRes, stateRes] = await Promise.all([
+  const [infoRes, historyRes, stateRes, settingsRes] = await Promise.all([
     fetch('/api/info'),
     fetch('/api/history'),
     fetch('/api/state'),
+    fetch('/api/settings'),
   ])
 
   state.info = await infoRes.json() as ServerInfo
   state.history = (await historyRes.json() as { items: HistoryEntry[] }).items
   const snapshot = await stateRes.json() as { drafts: DraftItem[]; clients: ClientSummary[] }
+  const savedSettings = await settingsRes.json() as { notificationsEnabled: boolean }
   state.drafts = snapshot.drafts
   state.clients = snapshot.clients
+  notificationsEnabled = savedSettings.notificationsEnabled !== false
+  renderNotificationButton()
   renderAll()
 }
 
@@ -304,12 +317,29 @@ historyList.addEventListener('click', async (event) => {
 })
 
 notifyBtn.addEventListener('click', async () => {
-  if (!('Notification' in window)) {
-    alert('当前浏览器不支持 Notification API')
-    return
+  const nextEnabled = !notificationsEnabled
+  notifyBtn.disabled = true
+
+  try {
+    const response = await fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ notificationsEnabled: nextEnabled }),
+    })
+    const result = await response.json() as { ok?: boolean; error?: string; settings?: { notificationsEnabled: boolean } }
+    if (!response.ok) throw new Error(result.error || 'settings update failed')
+
+    notificationsEnabled = result.settings?.notificationsEnabled ?? nextEnabled
+    renderNotificationButton()
+
+    if (notificationsEnabled && 'Notification' in window && Notification.permission === 'default') {
+      await Notification.requestPermission()
+    }
+  } catch (error) {
+    alert(`通知设置失败：${error instanceof Error ? error.message : String(error)}`)
+  } finally {
+    notifyBtn.disabled = false
   }
-  const permission = await Notification.requestPermission()
-  notifyBtn.textContent = permission === 'granted' ? '浏览器提醒已开启' : '浏览器提醒未开启'
 })
 
 initTheme(themeToggleBtn)

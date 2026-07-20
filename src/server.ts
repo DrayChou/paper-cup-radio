@@ -12,10 +12,36 @@ const PORT = Number(process.env.PORT || 8765)
 const HOST = process.env.HOST || '0.0.0.0'
 const DATA_DIR = path.join(process.cwd(), 'data')
 const HISTORY_FILE = path.join(DATA_DIR, 'history.jsonl')
+const SETTINGS_FILE = path.join(DATA_DIR, 'settings.json')
+
+type AppSettings = {
+  notificationsEnabled: boolean
+}
+
+const DEFAULT_SETTINGS: AppSettings = {
+  notificationsEnabled: true,
+}
 
 fs.mkdirSync(DATA_DIR, { recursive: true })
 if (!fs.existsSync(HISTORY_FILE)) {
   fs.writeFileSync(HISTORY_FILE, '')
+}
+
+function loadSettings(): AppSettings {
+  try {
+    const saved = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8')) as Partial<AppSettings>
+    return {
+      notificationsEnabled: saved.notificationsEnabled !== false,
+    }
+  } catch {
+    return { ...DEFAULT_SETTINGS }
+  }
+}
+
+let settings = loadSettings()
+
+function saveSettings() {
+  fs.writeFileSync(SETTINGS_FILE, `${JSON.stringify(settings, null, 2)}\n`, 'utf8')
 }
 
 function loadHistory(): HistoryEntry[] {
@@ -251,6 +277,24 @@ app.get('/api/state', (_req, res) => {
   res.json({ drafts: serializeDrafts(), clients: getClientSummary(), historyCount: history.length })
 })
 
+app.get('/api/settings', (_req, res) => {
+  res.json(settings)
+})
+
+app.post('/api/settings', (req, res) => {
+  if (typeof req.body?.notificationsEnabled !== 'boolean') {
+    res.status(400).json({ ok: false, error: 'notificationsEnabled must be a boolean' })
+    return
+  }
+
+  settings = {
+    ...settings,
+    notificationsEnabled: req.body.notificationsEnabled,
+  }
+  saveSettings()
+  res.json({ ok: true, settings })
+})
+
 app.post('/api/client/register', (req, res) => {
   const clientId = String(req.body?.clientId || '').trim()
   const deviceName = String(req.body?.deviceName || '').trim()
@@ -327,7 +371,9 @@ app.post('/api/submit', async (req, res) => {
     ? (paste.ok ? `来自 ${entry.deviceName} 的新输入已到达，并已直接粘贴到当前输入框` : `来自 ${entry.deviceName} 的新输入已到达，并已复制到剪贴板`)
     : `来自 ${entry.deviceName} 的新输入已到达`
 
-  notifyDesktop('Paper Cup Radio', desktopNotice).catch(() => undefined)
+  if (settings.notificationsEnabled) {
+    notifyDesktop('Paper Cup Radio', desktopNotice).catch(() => undefined)
+  }
 
   broadcast({ type: 'history:add', entry, clipboard, paste })
   broadcast({ type: 'clients:update', clients: getClientSummary() })
